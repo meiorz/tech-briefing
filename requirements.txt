@@ -5,3 +5,5 @@
 azure-functions
 feedparser
 requests
+
+azure-data-tables

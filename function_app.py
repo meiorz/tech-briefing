@@ -1,17 +1,17 @@
 import logging
 import os
+from datetime import datetime, timezone
 
 import azure.functions as func
-logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
 
+from briefing.clients import email_client, table_service
 from briefing.fetchers import hn, rss
+from briefing.mailer import send_briefing
+from briefing.render import render_html, render_text
 from briefing.sources import RSS_FEEDS
 from briefing.store import SeenStore
 
-from datetime import datetime, timezone
-
-from briefing.mailer import send_briefing
-from briefing.render import render_html, render_text
+logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
 
 app = func.FunctionApp()
 
@@ -28,11 +28,8 @@ def daily_briefing(timer: func.TimerRequest) -> None:
     for item in items:
         by_category[item.category] = by_category.get(item.category, 0) + 1
     logging.info("Fetched %d items: %s", len(items), by_category)
-    store = SeenStore(os.environ["BRIEFING_TABLES_CONNECTION"])
-    new_items = store.filter_new(items)
-    logging.info("New since last briefing: %d of %d", len(new_items), len(items))
 
-    store = SeenStore(os.environ["BRIEFING_TABLES_CONNECTION"])
+    store = SeenStore(table_service())
     new_items = store.filter_new(items)
     logging.info("New since last briefing: %d of %d", len(new_items), len(items))
 
@@ -42,7 +39,7 @@ def daily_briefing(timer: func.TimerRequest) -> None:
 
     today = datetime.now(timezone.utc).date()
     status = send_briefing(
-        os.environ["ACS_CONNECTION_STRING"],
+        email_client(),
         os.environ["BRIEFING_SENDER"],
         os.environ["BRIEFING_RECIPIENT"],
         f"Tech Briefing {today:%Y-%m-%d} ({len(new_items)} new)",
@@ -54,3 +51,4 @@ def daily_briefing(timer: func.TimerRequest) -> None:
 
     store.mark_sent(new_items)       # only after a successful send
     logging.info("Sent and recorded %d items", len(new_items))
+    

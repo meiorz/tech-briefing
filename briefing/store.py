@@ -10,8 +10,7 @@ PARTITION = "seen"
 
 
 class SeenStore:
-    def __init__(self, conn_str: str, table_name: str = "seenitems"):
-        service = TableServiceClient.from_connection_string(conn_str)
+    def __init__(self, service: TableServiceClient, table_name: str = "seenitems"):
         self.table = service.create_table_if_not_exists(table_name)
 
     def filter_new(self, items: list[Item]) -> list[Item]:

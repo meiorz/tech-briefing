@@ -9,3 +9,5 @@ requests
 azure-data-tables
 
 azure-communication-email
+
+azure-identity

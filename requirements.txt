@@ -7,3 +7,5 @@ feedparser
 requests
 
 azure-data-tables
+
+azure-communication-email

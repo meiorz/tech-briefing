@@ -4,9 +4,13 @@ from datetime import datetime, timezone
 
 import feedparser
 import requests
+import html
+import re
 
 from briefing.http import get
 from briefing.models import Feed, Item
+
+TAG = re.compile(r"<[^>]+>")
 
 log = logging.getLogger(__name__)
 
@@ -40,3 +44,10 @@ if __name__ == "__main__":
     results = fetch_all(RSS_FEEDS)
     for source, n in Counter(i.source for i in results).items():
         print(f"{source:15} {n}")
+
+def _summary(entry, max_len: int = 400) -> str:
+    text = html.unescape(TAG.sub(" ", entry.get("summary", "")))
+    text = " ".join(text.split())                                 # collapse whitespace
+    if len(text) <= max_len:
+        return text
+    return text[:max_len].rsplit(" ", 1)[0] + "…"                 # cut at a word boundary

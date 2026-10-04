@@ -17,3 +17,4 @@ class Item:
     title: str
     url: str
     published: datetime | None
+    summary: str = ""

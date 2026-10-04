@@ -12,6 +12,7 @@ from briefing.sources import RSS_FEEDS
 from briefing.store import SeenStore
 
 logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
+logging.getLogger("azure.identity").setLevel(logging.WARNING)
 
 app = func.FunctionApp()
 

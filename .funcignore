@@ -1,0 +1,10 @@
+.venv
+.azurite
+__pycache__
+local.settings.json
+out
+scripts
+infra
+dev.ps1
+.vscode
+.git*

@@ -5,7 +5,8 @@ from pathlib import Path
 from briefing.clients import email_client
 from briefing.mailer import send_briefing
 
-os.environ.update(json.load(open("local.settings.json"))["Values"])
+settings = json.loads(Path("local.settings.json").read_text(encoding="utf-8"))["Values"]
+os.environ.update({k: str(v) for k, v in settings.items()})
 status = send_briefing(
     email_client(), os.environ["BRIEFING_SENDER"], os.environ["BRIEFING_RECIPIENT"],
     "Tech Briefing (test)",

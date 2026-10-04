@@ -4,7 +4,7 @@ from datetime import datetime
 
 @dataclass(frozen=True)
 class Feed:
-    id: str                     # "security"
+    id: str                     # "krebs"
     name: str
     category: str
     url: str

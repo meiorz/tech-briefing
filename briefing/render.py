@@ -1,11 +1,13 @@
 from collections import defaultdict
 from datetime import date, datetime, timezone
 from html import escape
+from urllib.parse import urlsplit
 
 from briefing.models import Item
 
 ORDER = ["tech", "security", "crypto"]
 OLDEST = datetime.min.replace(tzinfo=timezone.utc)
+SAFE_SCHEMES = {"http", "https"}
 
 
 def _grouped(items: list[Item]) -> list[tuple[str, list[Item]]]:
@@ -20,6 +22,13 @@ def _grouped(items: list[Item]) -> list[tuple[str, list[Item]]]:
 
 def _when(item: Item) -> str:
     return f"{item.published:%Y-%m-%d %H:%M} UTC" if item.published else "unknown"
+
+
+def _link(item: Item) -> str:
+    title = escape(item.title)
+    if urlsplit(item.url).scheme.lower() not in SAFE_SCHEMES:   # no javascript:, data:, ...
+        return title
+    return f'<a href="{escape(item.url, quote=True)}">{title}</a>'
 
 
 def render_text(items: list[Item], day: date) -> str:
@@ -43,7 +52,7 @@ def render_html(items: list[Item], day: date) -> str:
         for i in group:
             summary = f"<br>{escape(i.summary)}" if i.summary else ""
             parts.append(
-                f'<li><a href="{escape(i.url, quote=True)}">{escape(i.title)}</a>'
+                f"<li>{_link(i)}"
                 f"<br><small>{escape(i.source)} · {_when(i)}</small>{summary}</li>"
             )
         parts.append("</ul>")

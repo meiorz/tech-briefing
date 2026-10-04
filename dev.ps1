@@ -1,3 +1,4 @@
+#Requires -Version 7
 if (-not (Test-NetConnection 127.0.0.1 -Port 10000 -InformationLevel Quiet -WarningAction SilentlyContinue)) {
     Write-Host "Azurite is not running. Start it first: azurite --location .azurite --silent" -ForegroundColor Red
     return

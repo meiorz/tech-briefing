@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
-from azure.core.exceptions import ResourceNotFoundError # pyright: ignore[reportMissingImports]
-from azure.data.tables import TableServiceClient # pyright: ignore[reportMissingImports]
+from azure.core.exceptions import ResourceNotFoundError
+from azure.data.tables import TableServiceClient
 
 from briefing.dedupe import key_for, normalize_url
 from briefing.models import Item
@@ -33,8 +33,8 @@ class SeenStore:
                 "PartitionKey": PARTITION,
                 "RowKey": key_for(i.url),
                 "Url": normalize_url(i.url),
-                "Title": i.source,
-                "SetAt": now,
+                "Title": i.title,
+                "SentAt": now,
             })
             for i in items
         ]

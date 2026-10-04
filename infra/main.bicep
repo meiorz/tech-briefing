@@ -4,9 +4,6 @@ param location string = resourceGroup().location
 @description('Existing Communication Services resource in this resource group')
 param acsName string = 'acs-briefing-meiorz'
 
-@description('GUID of the "Communication and Email Service Owner" role')
-param acsRoleId string
-
 param senderAddress string
 param recipientAddress string
 
@@ -32,6 +29,8 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   properties: {
     allowSharedKeyAccess: false      // no keys: identity only
     allowBlobPublicAccess: false
+    allowCrossTenantReplication: false
+    defaultToOAuthAuthentication: true
     minimumTlsVersion: 'TLS1_2'
     supportsHttpsTrafficOnly: true
   }
@@ -84,6 +83,27 @@ resource acs 'Microsoft.Communication/communicationServices@2023-04-01' existing
   name: acsName
 }
 
+// Least privilege for sending mail with Entra ID, per the ACS docs; replaces the broad
+// built-in "Communication and Email Service Owner" role.
+resource acsSenderRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' = {
+  name: guid(resourceGroup().id, 'acs-email-sender')
+  properties: {
+    roleName: 'ACS Email Sender (${resourceGroup().name})'
+    description: 'Send email through Azure Communication Services'
+    type: 'CustomRole'
+    assignableScopes: [ resourceGroup().id ]
+    permissions: [
+      {
+        actions: [
+          'Microsoft.Communication/CommunicationServices/Read'
+          'Microsoft.Communication/CommunicationServices/Write'
+          'Microsoft.Communication/EmailServices/write'
+        ]
+      }
+    ]
+  }
+}
+
 // ---------- Flex Consumption Function App ----------
 resource plan 'Microsoft.Web/serverfarms@2024-04-01' = {
   name: 'plan-briefing-${token}'
@@ -110,7 +130,7 @@ resource app 'Microsoft.Web/sites@2024-04-01' = {
         }
       }
       scaleAndConcurrency: {
-        maximumInstanceCount: 40
+        maximumInstanceCount: 1     // one daily timer; never needs scale-out
         instanceMemoryMB: 512
       }
       runtime: { name: 'python', version: '3.12' }
@@ -154,10 +174,10 @@ resource metricsRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 }
 
 resource acsRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(acs.id, app.id, acsRoleId)
+  name: guid(acs.id, app.id, acsSenderRole.id)
   scope: acs
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', acsRoleId)
+    roleDefinitionId: acsSenderRole.id
     principalId: app.identity.principalId
     principalType: 'ServicePrincipal'
   }
@@ -165,3 +185,5 @@ resource acsRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 
 output functionAppName string = app.name
 output storageAccountName string = storage.name
+output principalId string = app.identity.principalId
+output acsId string = acs.id

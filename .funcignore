@@ -8,3 +8,5 @@ infra
 dev.ps1
 .vscode
 .git*
+tests
+requirements-dev.txt

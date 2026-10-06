@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "BRIEFING_TABLES_CONNECTION": "UseDevelopmentStorage=true",
+    "ACS_CONNECTION_STRING": "endpoint=https://<your-acs>.communication.azure.com/;accesskey=<key>",
+    "BRIEFING_SENDER": "DoNotReply@<your-domain>.azurecomm.net",
+    "BRIEFING_RECIPIENT": "you@example.com"
+  }
+}

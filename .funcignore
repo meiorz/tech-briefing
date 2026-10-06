@@ -10,3 +10,8 @@ dev.ps1
 .git*
 tests
 requirements-dev.txt
+.github
+README.md
+LICENSE
+local.settings.example.json
+.pytest_cache

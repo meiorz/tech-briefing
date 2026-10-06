@@ -3,7 +3,9 @@ param(
   [ValidatePattern('^[^@\s]+@[^@\s]+\.[^@\s]+$')]
   [string]$RecipientAddress,
 
-  [string]$SenderAddress = "DoNotReply@601f7fef-0b4b-4d38-b74d-9f6f1310b629.azurecomm.net",
+  [Parameter(Mandatory)]
+  [string]$SenderAddress,
+
   [string]$ResourceGroup = "rg-tech-briefing",
   [string]$Location = "westus3"
 )
